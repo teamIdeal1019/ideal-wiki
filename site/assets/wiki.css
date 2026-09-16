@@ -1,0 +1,939 @@
+:root{
+  --espejo-background:#f5f5f5;
+  --espejo-text:#212529;
+  --espejo-text-secondary:rgba(33,37,41,.749);
+  --espejo-text-tertiary:rgba(33,37,41,.502);
+  --espejo-link:#0275d8;
+  --espejo-link-hover:#0263b8;
+  --espejo-external:#377e21;
+  --espejo-external-mark:#008000;
+  --espejo-brand-1:#00a69c;
+  --espejo-brand-2:#28b472;
+  --espejo-card:#fff;
+  --espejo-card-border:#ccc;
+  --espejo-component-border:#ced4da;
+  --espejo-component-focus:#f2f2f2;
+  --espejo-button-border:#dadada;
+  --espejo-button-hover:#efefef;
+  --espejo-table-bg:#f5f5f5;
+  --espejo-table-border:#ddd;
+  --espejo-quote-line:#71bc6d;
+  --espejo-quote-bg:#eee;
+  --ideal-navy:#161861;
+  --ideal-gray:#9c9c9c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:4rem}
+body{
+  margin:0;
+  background:var(--espejo-background);
+  color:var(--espejo-text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",Arial,sans-serif;
+  font-size:15px;
+  line-height:1.68;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+}
+a{color:var(--espejo-link);text-decoration:none}
+a:hover{color:var(--espejo-link-hover);text-decoration:underline}
+button,input{font:inherit}
+
+/* Espejo-like top navigation */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  color:#fff;
+  background:linear-gradient(90deg,var(--espejo-brand-1),var(--espejo-brand-1),var(--espejo-brand-2));
+  box-shadow:0 1px 2px rgba(0,0,0,.15);
+}
+.topbar-inner{
+  max-width:1280px;height:3rem;margin:0 auto;padding:0 1rem;
+  display:flex;align-items:center;gap:.4rem;
+}
+.brand{
+  height:3rem;display:flex;align-items:center;gap:.38rem;
+  color:#fff!important;font-size:1.15rem;font-weight:800;white-space:nowrap;
+  padding:0 .55rem 0 .1rem;
+}
+.brand:hover{text-decoration:none}
+.brand-symbol{width:27px;height:22px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.brand-symbol circle{fill:#fff;stroke:none}
+.nav-links{display:flex;align-items:stretch;height:100%;margin-left:.3rem}
+.nav-action,.profile-btn{
+  border:0;background:transparent;color:#fff;cursor:pointer;
+  height:3rem;padding:0 .72rem;font-weight:600;font-size:.94rem;
+}
+.nav-action:hover,.profile-btn:hover{background:rgba(0,0,0,.09)}
+.nav-icon{font-size:.83em;margin-right:.26rem;opacity:.95}.caret{margin-left:.18rem;font-size:.8em}
+.profile-btn{font-size:1.06rem;min-width:2.7rem}
+.search{position:relative}
+.desktop-search{margin-left:auto;width:min(370px,34vw);height:2rem;display:flex;align-items:center;background:#fff;border-radius:3px;color:#555;overflow:visible}
+.search .shuffle{display:grid;place-items:center;width:2rem;height:2rem;color:#555;border-right:1px solid #e6e6e6;font-size:.88rem}
+.search input{min-width:0;flex:1;height:2rem;border:0;outline:0;background:#fff;color:#212529;padding:0 .6rem;font-size:.88rem}
+.search input::placeholder{color:#999}
+.search>button{width:2.1rem;height:2rem;border:0;background:#fff;color:#333;cursor:pointer;font-size:1rem}
+.suggestions{position:absolute;top:2.18rem;left:2rem;right:0;display:none;background:#fff;border:1px solid var(--espejo-component-border);box-shadow:0 4px 12px rgba(0,0,0,.16);z-index:120;max-height:340px;overflow:auto;color:#212529}
+.suggestions.open{display:block}.suggestions a{display:block;padding:.45rem .65rem;border-bottom:1px solid #eee;font-size:.85rem}.suggestions a:last-child{border-bottom:0}
+.mobile-search{display:none}
+
+.layout{width:min(1200px,calc(100% - 2rem));margin:1rem auto 2.5rem;display:block}
+.content-card{
+  background:var(--espejo-card);border:1px solid var(--espejo-card-border);border-radius:4px;
+  padding:1.35rem 1.55rem 3.2rem;min-width:0;
+}
+.doc-title{font-size:2.18rem;line-height:1.22;margin:0 0 .22rem;font-weight:700;letter-spacing:-.025em}
+.doc-meta{font-size:.88rem;color:var(--espejo-text-secondary);margin-bottom:.65rem}
+.action-row{display:flex;justify-content:flex-end;align-items:center;margin:-2.55rem 0 1rem auto;min-height:2.25rem}
+.action-row .watch-count{font-size:.73rem;color:var(--espejo-text-tertiary);border:1px solid var(--espejo-component-border);border-radius:1rem;padding:.05rem .38rem;margin-right:.25rem}
+.action-row button{
+  min-height:2.18rem;border:1px solid var(--espejo-button-border);border-right:0;background:#fff;color:var(--espejo-text-secondary);
+  padding:.32rem .64rem;cursor:pointer;font-size:.87rem;border-radius:0;
+}
+.action-row button:first-of-type{border-radius:4px 0 0 4px}.action-row button:last-child{border-right:1px solid var(--espejo-button-border);border-radius:0 4px 4px 0}
+.action-row button:hover{background:var(--espejo-button-hover);color:var(--espejo-text)}
+.action-row .icon-only{font-size:1.15rem;padding-inline:.55rem}.tool-icon{font-size:.9em}
+.category-box{border:1px solid var(--espejo-card-border);border-radius:3px;padding:.48rem .7rem;background:#fff;margin:.85rem 0 1.25rem;font-size:.9rem;line-height:1.45}
+.category-box b{font-weight:600;margin-right:.2rem}
+
+/* Top TOC + infobox */
+.overview-grid{display:grid;grid-template-columns:minmax(280px,1fr) minmax(310px,365px);gap:2rem;align-items:start;margin:1.55rem 0 2rem}
+.toc-box{width:min(100%,420px);border:1px solid var(--espejo-card-border);background:#fff;padding:1rem 1.18rem 1.05rem}
+.toc-title{font-size:1.45rem;font-weight:500;margin:0 0 .55rem;line-height:1.5}
+.toc-toggle{float:right;border:0;background:transparent;color:#666;padding:.05rem .25rem;cursor:pointer;font-size:1rem}
+.toc-list{list-style:none;padding:0;margin:0;line-height:1.72}.toc-item{margin:0}.toc-depth-3{padding-left:1.7rem}.toc-depth-4{padding-left:3.4rem}
+.toc-entry-link{display:inline;text-decoration:none}.toc-entry-link:hover{text-decoration:underline;text-decoration-color:var(--espejo-link-hover)}.toc-entry-link .toc-number{color:var(--espejo-link)}.toc-entry-link .toc-label{color:var(--espejo-text)}.toc-box.compact .toc-list{display:none}.toc-box.compact .toc-toggle{transform:rotate(-90deg)}
+
+.infobox-wrap{width:100%}.infobox{border-collapse:collapse;width:100%;font-size:.88rem;background:#fff;border:1px solid #aaa;table-layout:fixed}
+.infobox caption{caption-side:top;background:var(--ideal-navy);color:#fff;border:1px solid #777;border-bottom:0;font-size:1.45rem;font-weight:700;line-height:1.25;padding:.72rem .55rem}
+.infobox caption small{display:block;font-size:1rem;margin-top:.2rem;font-weight:700}
+.infobox th,.infobox td{border:1px solid #aaa;padding:.5rem .55rem;vertical-align:middle}
+.infobox th{width:34%;background:var(--ideal-navy);color:#fff;text-align:center;font-weight:700}.infobox td{background:#fff;text-align:center}
+.infobox .hero{height:250px;padding:0;background:#fff}.infobox .hero img{display:block;max-width:100%;max-height:245px;margin:auto;object-fit:contain}
+.source-link-icon{display:inline-block;width:1.15em;height:1.15em;object-fit:contain;vertical-align:-.16em;margin-right:.18rem}.icon-only-link{display:inline-block;line-height:1}.icon-only-link:hover{text-decoration:none}.source-green{color:#008000}
+.color-chip{display:inline-block;width:.88rem;height:.88rem;border:1px solid rgba(0,0,0,.2);vertical-align:-.12rem;margin-right:.18rem}.color-chip.navy{background:#161861}.color-chip.gray{background:#9c9c9c}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#f1f3f5;padding:.02rem .2rem;border-radius:2px;color:#212529}
+
+/* Exact NamuWiki-like text/link treatment */
+a.external,a.external span{color:var(--espejo-external)!important}
+a.external:hover,a.external:hover span{color:var(--espejo-external)!important;text-decoration:underline}
+a.internal{color:var(--espejo-link)}
+
+.wiki-heading{position:relative;color:var(--espejo-text);line-height:1.35;border-bottom:1px solid #ccc;margin:2.15rem 0 .85rem;padding:0 3.2rem .38rem 1.25rem;scroll-margin-top:4rem;font-weight:700}
+.wiki-heading[data-depth="2"]{font-size:1.75rem}.wiki-heading[data-depth="3"]{font-size:1.47rem}.wiki-heading[data-depth="4"]{font-size:1.23rem}
+.section-number{color:var(--espejo-link);font-weight:700}.section-number:hover{color:var(--espejo-link-hover)}.section-title{color:var(--espejo-text)}
+.fold-btn{position:absolute;left:0;top:.12rem;border:0;background:transparent;color:#666;font-size:.88rem;cursor:pointer;padding:.2rem .24rem;line-height:1}.section-edit{position:absolute;right:0;bottom:.42rem;border:0;background:transparent;color:var(--espejo-link);font-size:.75rem;cursor:pointer;padding:0}.section-edit:hover{color:var(--espejo-link-hover);text-decoration:underline}
+.section-collapsed+.section-hidden{display:none}
+.content-card p{margin:.48rem 0 .75rem}.bullet-item,.numbered-item{display:flex;gap:.55rem;margin:.38rem 0}.bullet{font-size:.75rem;margin-top:.2rem}.numbered-item .num{min-width:1.55rem;font-weight:600}
+
+.table-scroll{overflow-x:auto;margin:.85rem 0 1.2rem}.table-scroll table{border-collapse:collapse;background:#fff;width:auto;max-width:100%;margin:0 auto}.table-scroll th,.table-scroll td{border:1px solid var(--espejo-table-border);padding:.42rem .58rem;vertical-align:middle}.table-scroll th{background:var(--espejo-table-bg);font-weight:700;text-align:center}
+.table-quote table{width:100%;background:var(--espejo-quote-bg);border-left:4px solid var(--espejo-quote-line)}.table-quote td{border-color:#ccc;text-align:center;padding:.8rem 1rem;font-size:1rem}
+.table-logo-gallery table{width:100%}.table-logo-gallery td{text-align:center}.table-logo-gallery .doc-image{max-height:285px}
+.table-rule table{width:100%}.table-rule td{padding:.72rem .85rem}.table-role-table td,.table-role-table th,.table-drive-shot td{text-align:center}.table-requirements th{background:#f5f5f5}
+.table-works{font-size:.79rem}.table-works table{min-width:850px;width:100%}.table-works td:nth-child(1){white-space:nowrap;width:92px;text-align:center}.table-works td:nth-child(2){width:70px;text-align:center}.table-works td:nth-child(3){width:155px;text-align:center}.table-works td:nth-child(5){width:72px;text-align:center}.table-works .doc-image{max-width:150px;max-height:88px;object-fit:contain}.table-events table{max-width:720px;width:100%}
+.doc-image{display:inline-block;max-width:min(100%,var(--img-w,100%));height:auto;max-height:720px;object-fit:contain;vertical-align:middle}.table-scroll .doc-image{margin:.2rem auto}
+.footnote-box{border-top:1px solid #ccc;margin-top:2.5rem;padding-top:.2rem}
+.toast{position:fixed;left:50%;bottom:1.7rem;transform:translateX(-50%);background:#2d2f34;color:#fff;padding:.55rem .8rem;border-radius:3px;box-shadow:0 3px 14px rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:.18s;z-index:150;font-size:.88rem}.toast.show{opacity:1}
+.backtop{position:fixed;right:1.1rem;bottom:1.1rem;width:2.45rem;height:2.45rem;border:1px solid var(--espejo-component-border);border-radius:4px;background:#fff;color:#555;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1);font-size:1rem}.backtop:hover{background:#f2f2f2}
+
+/* Dark colors follow Espejo's light/dark pairs */
+body.dark{
+  --espejo-background:#000;--espejo-text:#e0e0e0;--espejo-text-secondary:hsla(0,0%,88%,.749);--espejo-text-tertiary:hsla(0,0%,88%,.502);
+  --espejo-link:#ec9f19;--espejo-link-hover:#bd7f14;--espejo-card:#1c1d1f;--espejo-card-border:#444;--espejo-component-border:#444;
+  --espejo-component-focus:#262626;--espejo-button-border:#3e3e3e;--espejo-button-hover:#1e1e1e;--espejo-brand-1:#2e3033;--espejo-brand-2:#2e3033;--espejo-table-bg:#2d2f34;--espejo-table-border:#383b40;--espejo-quote-bg:#2d2f34;--espejo-quote-line:#666c75;
+}
+body.dark .content-card,body.dark .category-box,body.dark .toc-box,body.dark .infobox,body.dark .infobox td,body.dark .table-scroll table,body.dark .action-row button,body.dark .backtop{background:#1c1d1f;color:#e0e0e0}
+body.dark .infobox .hero{background:#fff}body.dark code{background:#2d2f34;color:#e0e0e0}body.dark .suggestions{background:#1c1d1f;color:#e0e0e0;border-color:#444}body.dark .suggestions a{border-color:#383b40}body.dark .wiki-heading{border-color:#383b40}body.dark .table-quote td{border-color:#383b40}
+
+@media(max-width:1024px){
+  .topbar{background:var(--espejo-brand-1)}
+  .desktop-search{display:none}.mobile-search{display:flex;height:2.65rem;background:#fff;color:#333;border-top:1px solid rgba(0,0,0,.08);border-radius:0}
+  .mobile-search .shuffle{height:2.65rem;width:2.65rem}.mobile-search input{height:2.65rem;font-size:.96rem}.mobile-search>button{height:2.65rem;width:2.75rem;font-size:1.15rem}
+  .mobile-search .suggestions{top:2.65rem;left:2.65rem}
+  .layout{width:min(100% - 1rem,980px);margin:.6rem auto 1.5rem}.content-card{padding:1.05rem 1rem 2.6rem}
+  .overview-grid{grid-template-columns:1fr;gap:1.15rem}.toc-box{width:100%;max-width:none}.infobox-wrap{max-width:520px;margin:0 auto}
+  .nav-action{font-size:0;width:2.65rem;padding:0}.nav-action .nav-icon{font-size:1rem;margin:0}.nav-action .caret{display:none}
+  .doc-title{font-size:1.95rem}.action-row{margin:.4rem 0 .85rem;justify-content:flex-start;flex-wrap:wrap}.action-row .watch-count{display:none}
+}
+@media(max-width:620px){
+  body{font-size:14px;line-height:1.65}.topbar-inner{padding:0 .45rem;gap:0}.brand{font-size:1.05rem;padding-right:.35rem}.brand-symbol{width:25px}.profile-btn{margin-left:auto}
+  .layout{width:100%;margin:0}.content-card{border-left:0;border-right:0;border-radius:0;padding:.95rem .9rem 2.5rem}
+  .doc-title{font-size:1.75rem;word-break:keep-all}.doc-meta{font-size:.82rem}.action-row button{font-size:.8rem;padding:.3rem .48rem}
+  .category-box{font-size:.85rem}.toc-title{font-size:1.35rem}.toc-depth-3{padding-left:1.35rem}.toc-depth-4{padding-left:2.7rem}
+  .wiki-heading{margin-top:1.75rem;padding-left:1.1rem;padding-right:2.7rem}.wiki-heading[data-depth="2"]{font-size:1.5rem}.wiki-heading[data-depth="3"]{font-size:1.28rem}.wiki-heading[data-depth="4"]{font-size:1.12rem}.section-edit{font-size:.7rem}
+  .infobox caption{font-size:1.3rem}.infobox th{width:32%;padding:.45rem .35rem}.infobox td{padding:.45rem .4rem}.backtop{right:.6rem;bottom:.6rem}
+}
+
+/* Source tables: preserve the Team Ideal document's navy header rows while using NamuWiki table geometry. */
+.table-logo-gallery tr:first-child td,
+.table-role-table tr:first-child td,
+.table-drive-shot tr:first-child td,
+.table-requirements tr:first-child td,
+.table-works tr:first-child td,
+.table-events tr:first-child td{
+  background:#161861;color:#fff;font-weight:700;text-align:center;
+}
+.table-logo-gallery tr:first-child span,
+.table-role-table tr:first-child span,
+.table-drive-shot tr:first-child span,
+.table-requirements tr:first-child span,
+.table-works tr:first-child span,
+.table-events tr:first-child span{color:#fff!important}
+.table-rule td{background:#f5f5f5}
+body.dark .table-rule td{background:#2d2f34}
+
+
+/* =========================================================
+   2026-09 Espejo geometry pass — matched to supplied capture
+   ========================================================= */
+:root{
+  --wiki-shell-width:1376px;
+  --wiki-sidebar-width:320px;
+  --wiki-shell-gap:12px;
+}
+body{background:#f3f3f3;font-size:15px;line-height:1.62;}
+.topbar{height:41px;background:linear-gradient(100deg,#00a99d 0%,#08ad91 53%,#27b877 100%);box-shadow:none;}
+.topbar-inner{max-width:var(--wiki-shell-width);height:41px;padding:0 4px;gap:0;}
+.brand{height:41px;padding:0 12px 0 4px;font-size:16px;gap:5px;}
+.brand-symbol{width:27px;height:22px;}
+.nav-links{height:41px;margin-left:0;}
+.nav-action,.profile-btn{height:41px;padding:0 12px;font-size:13px;font-weight:600;}
+.desktop-search{margin-left:auto;width:286px;height:31px;background:transparent;border-radius:0;overflow:visible;display:grid;grid-template-columns:32px minmax(0,1fr) 34px;column-gap:6px;}
+.search .shuffle{width:32px;height:31px;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:4px;color:#555;}
+.search input{height:31px;border:1px solid rgba(0,0,0,.12);border-right:0;border-radius:4px 0 0 4px;padding:0 9px;font-size:13px;}
+.search>button{width:34px;height:31px;border:1px solid rgba(0,0,0,.12);border-left:0;border-radius:0 4px 4px 0;font-size:15px;}
+.suggestions{top:35px;left:38px;}
+.profile-btn{min-width:40px;padding:0 9px;font-size:14px;}
+
+.layout{width:calc(100% - 40px);max-width:var(--wiki-shell-width);margin:12px auto 42px;display:grid;grid-template-columns:minmax(0,1fr) var(--wiki-sidebar-width);gap:var(--wiki-shell-gap);align-items:start;}
+.content-card{position:relative;border:1px solid #d4d4d4;border-radius:7px;padding:17px 18px 48px;box-shadow:none;min-width:0;}
+.doc-title{font-size:28px;line-height:1.22;margin:0 0 2px;font-weight:700;letter-spacing:-.032em;}
+.doc-meta{font-size:11px;line-height:1.4;color:#777;margin:0;}
+.action-row{position:absolute;top:17px;right:18px;margin:0;min-height:31px;height:31px;display:flex;align-items:stretch;}
+.action-row .watch-count{position:absolute;top:-9px;left:-10px;z-index:2;background:#fff;border:1px solid #d7d7d7;color:#777;border-radius:9px;font-size:9px;line-height:14px;min-width:20px;text-align:center;padding:0 3px;margin:0;}
+.action-row button{min-height:31px;height:31px;padding:0 8px;font-size:12px;border-color:#ddd;color:#555;}
+.action-row .icon-only{font-size:16px;padding-inline:8px;}
+.document-ad-space{height:117px;}
+.category-box{margin:0 0 11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;font-size:11px;line-height:1.35;min-height:23px;display:flex;align-items:center;flex-wrap:wrap;gap:0 2px;}
+.category-box b{font-size:11px;}
+
+.overview-grid{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin:10px 0 28px;}
+.toc-box{flex:0 0 266px;width:266px;max-width:266px;padding:13px 16px 14px;border-color:#d3d3d3;border-radius:0;}
+.toc-title{font-size:18px;font-weight:600;line-height:1.4;margin:0 0 9px;}
+.toc-toggle{font-size:13px;margin-top:1px;}
+.toc-list{font-size:14px;line-height:1.62;}
+.toc-depth-3{padding-left:19px}.toc-depth-4{padding-left:38px}
+.infobox-wrap{flex:0 0 448px;width:448px;max-width:448px;}
+.infobox{font-size:12px;border-color:#b8b8b8;}
+.infobox caption{font-size:19px;line-height:1.2;padding:10px 8px;border-color:#8f8f8f;}
+.infobox caption small{font-size:13px;margin-top:3px;}
+.infobox th,.infobox td{padding:6px 8px;border-color:#c8c8c8;}
+.infobox th{width:39%;}
+.infobox .hero{height:235px;}
+.infobox .hero img{max-height:232px;}
+
+.wiki-sidebar{width:320px;min-width:0;position:sticky;top:53px;display:flex;flex-direction:column;gap:12px;}
+.side-card{position:relative;background:#fff;border:1px solid #d4d4d4;border-radius:7px;overflow:hidden;padding:14px 16px 15px;}
+.side-title{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:14px;line-height:1.3;font-weight:700;color:#2f3337;}
+.side-title-icon{display:inline-flex;align-items:center;justify-content:center;width:17px;color:#9aa0a4;font-size:14px;}
+.clock-icon{font-size:17px;}
+.side-chevron{margin-left:auto;color:#5f666b;font-size:29px;font-weight:300;line-height:14px;transform:translateY(-1px);}
+.live-card{min-height:69px;padding-top:13px;}
+.live-card .side-title{margin-bottom:8px;}
+.live-keyword{display:flex;align-items:center;gap:9px;font-size:14px;padding-left:3px;}
+.live-rank{width:14px;text-align:center;color:#222;font-size:12px;font-weight:600;}
+.live-keyword a{font-size:14px;color:#0879d9;font-weight:500;}
+.recent-card{padding-top:15px;padding-bottom:14px;}
+.side-progress{position:absolute;top:0;left:0;width:58%;height:4px;background:#d9d9d9;}
+.recent-list{display:flex;flex-direction:column;gap:0;}
+.recent-list a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;min-height:25px;color:#0879d9;font-size:13px;line-height:1.2;text-decoration:none;}
+.recent-list a:hover{text-decoration:underline;}
+.recent-list a span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.recent-list time{color:#333;font-size:10px;white-space:nowrap;text-decoration:none;}
+
+.floating-tools{position:fixed;right:20px;bottom:24px;z-index:120;display:flex;flex-direction:column;gap:8px;}
+.floating-tools button{width:34px;height:34px;border:1px solid #d8d8d8;border-radius:6px;background:#fff;color:#555;box-shadow:0 2px 7px rgba(0,0,0,.08);cursor:pointer;font-size:16px;}
+.floating-tools .backtop,.floating-tools .backbottom{position:static;box-shadow:0 2px 7px rgba(0,0,0,.08);}
+.floating-tools .backtop{margin-bottom:-8px;border-radius:6px 6px 0 0;border-bottom:0;}
+.floating-tools .backbottom{border-radius:0 0 6px 6px;}
+.float-list{margin-bottom:3px;}
+
+/* The document headings on Espejo are a little more compact than the previous build. */
+.wiki-heading{margin:2rem 0 .75rem;padding-bottom:.32rem;}
+.wiki-heading[data-depth="2"]{font-size:1.68rem}.wiki-heading[data-depth="3"]{font-size:1.42rem}.wiki-heading[data-depth="4"]{font-size:1.2rem}
+.content-card p{margin:.42rem 0 .68rem;}
+
+body.dark .side-card{background:#1c1d1f;border-color:#444;}
+body.dark .side-title,body.dark .live-rank,body.dark .recent-list time{color:#ddd;}
+body.dark .side-progress{background:#444;}
+
+@media(max-width:1180px){
+  .layout{display:block;width:min(100% - 20px,1044px);}
+  .wiki-sidebar{display:none;}
+  .topbar-inner{max-width:1044px;}
+}
+@media(max-width:860px){
+  .document-ad-space{height:45px;}
+  .overview-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+  .toc-box{width:100%;max-width:none;flex:auto;}
+  .infobox-wrap{width:min(100%,520px);max-width:520px;flex:auto;margin:0 auto;}
+  .action-row{position:static;margin:10px 0 8px;height:auto;min-height:31px;justify-content:flex-start;}
+  .action-row .watch-count{display:none;}
+  .desktop-search{display:none;}
+}
+@media(max-width:620px){
+  .layout{width:100%;margin:0;}
+  .content-card{border-radius:0;border-left:0;border-right:0;padding:14px 13px 40px;}
+  .doc-title{font-size:25px;}
+  .document-ad-space{height:18px;}
+  .category-box{font-size:10px;}
+  .floating-tools{right:8px;bottom:10px;}
+}
+
+/* =========================================================
+   2026-09 dark accent + readability pass
+   - dark mode: NamuWiki-like warm amber accent
+   - body copy: more breathing room vertically
+   ========================================================= */
+:root{
+  --wiki-reading-line:1.78;
+  --wiki-paragraph-gap:.9rem;
+  --wiki-list-gap:.56rem;
+}
+
+/* Reading rhythm: keep chrome compact, open up only article copy. */
+#wikiBody{
+  line-height:var(--wiki-reading-line);
+}
+#wikiBody > p{
+  margin:.62rem 0 var(--wiki-paragraph-gap);
+}
+#wikiBody .bullet-item{
+  align-items:flex-start;
+  margin:var(--wiki-list-gap) 0;
+  line-height:1.76;
+}
+#wikiBody .bullet-item .bullet{
+  margin-top:.26rem;
+}
+#wikiBody .numbered-item{
+  align-items:flex-start;
+  margin:.52rem 0;
+  line-height:1.74;
+}
+#wikiBody .numbered-item + .numbered-item{
+  margin-top:.62rem;
+}
+#wikiBody .numbered-item .num{
+  padding-top:.01rem;
+}
+#wikiBody .table-rule p{
+  margin:.48rem 0 .72rem;
+  line-height:1.72;
+}
+#wikiBody .table-rule td{
+  padding:.86rem .92rem;
+}
+#wikiBody .table-scroll{
+  margin:1rem 0 1.45rem;
+}
+#wikiBody .wiki-heading{
+  margin:2.35rem 0 1rem;
+  padding-bottom:.42rem;
+}
+#wikiBody .wiki-heading[data-depth="3"]{
+  margin-top:2.05rem;
+}
+#wikiBody .wiki-heading[data-depth="4"]{
+  margin-top:1.8rem;
+}
+
+/* Dark theme: warm amber replaces light-theme blue point color. */
+body.dark{
+  --espejo-background:#191a1c;
+  --espejo-card:#1d1f21;
+  --espejo-text:#e4e4e4;
+  --espejo-text-secondary:rgba(228,228,228,.76);
+  --espejo-text-tertiary:rgba(228,228,228,.52);
+  --espejo-link:#efa51a;
+  --espejo-link-hover:#ffb82f;
+  --espejo-component-border:#3c3f43;
+  --espejo-card-border:#3c3f43;
+  --espejo-button-border:#3f4246;
+  --espejo-button-hover:#292b2e;
+  --espejo-table-bg:#26282b;
+  --espejo-table-border:#3c3f43;
+  --espejo-quote-bg:#26282b;
+  --espejo-quote-line:#62666d;
+}
+
+body.dark .content-card,
+body.dark .side-card,
+body.dark .category-box,
+body.dark .toc-box,
+body.dark .infobox,
+body.dark .infobox td,
+body.dark .table-scroll table,
+body.dark .action-row button,
+body.dark .floating-tools button,
+body.dark .backtop{
+  background:#1d1f21;
+  color:var(--espejo-text);
+}
+
+/* Source DOCX contains hard-coded light-theme colors. Remap them in dark mode. */
+body.dark #wikiBody [style*="color:#212529"],
+body.dark #wikiBody [style*="color: #212529"],
+body.dark #wikiBody [style*="color:#000000"],
+body.dark #wikiBody [style*="color: #000000"]{
+  color:var(--espejo-text)!important;
+}
+body.dark #wikiBody [style*="color:#0275d8"],
+body.dark #wikiBody [style*="color: #0275d8"],
+body.dark #wikiBody [style*="color:#0879d9"],
+body.dark #wikiBody [style*="color: #0879d9"]{
+  color:var(--espejo-link)!important;
+}
+body.dark #wikiBody [style*="color:#999999"],
+body.dark #wikiBody [style*="color: #999999"]{
+  color:#999!important;
+}
+
+/* Every interactive/document accent that is blue in light mode turns amber in dark mode. */
+body.dark a.internal,
+body.dark .section-number,
+body.dark .section-edit,
+body.dark .toc-entry-link .toc-number,
+body.dark .category-link,
+body.dark .live-keyword a,
+body.dark .recent-list a{
+  color:var(--espejo-link)!important;
+}
+body.dark a.internal:hover,
+body.dark .section-number:hover,
+body.dark .section-edit:hover,
+body.dark .toc-entry-link:hover .toc-number,
+body.dark .category-link:hover,
+body.dark .live-keyword a:hover,
+body.dark .recent-list a:hover{
+  color:var(--espejo-link-hover)!important;
+}
+
+body.dark .wiki-heading{
+  color:var(--espejo-text);
+  border-bottom-color:#3b3e42;
+}
+body.dark .section-title,
+body.dark .toc-entry-link .toc-label{
+  color:var(--espejo-text)!important;
+}
+body.dark .fold-btn{
+  color:#85898e;
+}
+body.dark .doc-title,
+body.dark .toc-title{
+  color:#ececec;
+}
+body.dark .doc-meta{
+  color:#9b9da1;
+}
+body.dark .category-box{
+  border-color:#3c3f43;
+}
+body.dark .toc-box{
+  border-color:#3c3f43;
+}
+body.dark .side-title,
+body.dark .live-rank,
+body.dark .recent-list time{
+  color:#ddd;
+}
+body.dark .side-progress{
+  background:#45484c;
+}
+
+/* Keep Team Ideal's own navy infobox identity, but avoid light cells glaring in dark mode. */
+body.dark .infobox td:not(.hero){
+  background:#222427;
+  color:#e4e4e4;
+}
+body.dark .infobox .hero{
+  background:#fff;
+}
+body.dark code{
+  background:#2b2d30;
+  color:#e7e7e7;
+}
+
+@media(max-width:620px){
+  #wikiBody{line-height:1.74;}
+  #wikiBody > p{margin:.55rem 0 .82rem;}
+  #wikiBody .bullet-item{margin:.48rem 0;line-height:1.7;}
+  #wikiBody .numbered-item{margin:.46rem 0;line-height:1.68;}
+  #wikiBody .wiki-heading{margin-top:2rem;margin-bottom:.85rem;}
+}
+
+/* Drive references: visually link-like, intentionally non-clickable. */
+.drive-faux-link{
+  display:inline-flex;
+  align-items:center;
+  gap:.16em;
+  color:#008000;
+  line-height:inherit;
+  vertical-align:baseline;
+  white-space:nowrap;
+  text-decoration:none;
+  cursor:default;
+}
+.drive-faux-link span,
+.drive-faux-link strong{
+  color:inherit !important;
+}
+.drive-faux-link .drive-faux-icon,
+img.drive-faux-icon{
+  display:inline-block !important;
+  width:1em !important;
+  height:1em !important;
+  max-width:1em !important;
+  max-height:1em !important;
+  object-fit:contain;
+  margin:0 !important;
+  vertical-align:baseline !important;
+  flex:0 0 auto;
+  transform:translateY(-.02em);
+}
+.drive-faux-link:hover{
+  color:#008000;
+  text-decoration:none;
+}
+html[data-theme="dark"] .drive-faux-link{
+  color:#38b24a;
+}
+html[data-theme="dark"] .drive-faux-link:hover{
+  color:#38b24a;
+}
+
+/* =========================================================
+   NamuWiki-style compact tables — 2026-09-15
+   Keep article prose roomy, but tables deliberately dense.
+   ========================================================= */
+:root{
+  --wiki-table-font:13.5px;
+  --wiki-table-line:1.42;
+  --wiki-table-pad-y:6px;
+  --wiki-table-pad-x:8px;
+  --wiki-table-grid:#d5d5d5;
+}
+
+/* Generic data-table geometry */
+#wikiBody .table-scroll{
+  margin:.8rem 0 1.15rem;
+}
+#wikiBody .table-scroll table{
+  border-collapse:collapse;
+  border-spacing:0;
+  font-size:var(--wiki-table-font);
+  line-height:var(--wiki-table-line);
+}
+#wikiBody .table-scroll th,
+#wikiBody .table-scroll td{
+  border:1px solid var(--wiki-table-grid);
+  padding:var(--wiki-table-pad-y) var(--wiki-table-pad-x);
+  vertical-align:middle;
+}
+#wikiBody .table-scroll th{
+  font-size:13.5px;
+  line-height:1.3;
+  font-weight:700;
+}
+
+/* DOCX exporter wrapped almost every cell in <p>. In a wiki table those
+   paragraph margins should not expand the row. */
+#wikiBody .table-scroll td > p,
+#wikiBody .table-scroll th > p,
+#wikiBody .table-scroll td p,
+#wikiBody .table-scroll th p{
+  margin:0;
+  padding:0;
+  line-height:1.42;
+}
+#wikiBody .table-scroll td p + p,
+#wikiBody .table-scroll th p + p{
+  margin-top:2px;
+}
+
+/* Images inside table cells should sit on the text baseline without the
+   document-image margins used for standalone figures. */
+#wikiBody .table-scroll .doc-image{
+  margin:0 auto;
+  vertical-align:middle;
+}
+
+/* Team Ideal source tables use navy as their document-defined header color.
+   Apply it to both TH and TD first rows; the earlier exporter mixed both. */
+#wikiBody .table-logo-gallery tr:first-child > th,
+#wikiBody .table-logo-gallery tr:first-child > td,
+#wikiBody .table-role-table tr:first-child > th,
+#wikiBody .table-role-table tr:first-child > td,
+#wikiBody .table-drive-shot tr:first-child > th,
+#wikiBody .table-drive-shot tr:first-child > td,
+#wikiBody .table-requirements tr:first-child > th,
+#wikiBody .table-requirements tr:first-child > td,
+#wikiBody .table-works tr:first-child > th,
+#wikiBody .table-works tr:first-child > td,
+#wikiBody .table-events tr:first-child > th,
+#wikiBody .table-events tr:first-child > td{
+  background:var(--ideal-navy)!important;
+  color:#fff!important;
+  font-weight:700;
+  text-align:center;
+  padding-top:7px;
+  padding-bottom:7px;
+}
+#wikiBody .table-logo-gallery tr:first-child *,
+#wikiBody .table-role-table tr:first-child *,
+#wikiBody .table-drive-shot tr:first-child *,
+#wikiBody .table-requirements tr:first-child *,
+#wikiBody .table-works tr:first-child *,
+#wikiBody .table-events tr:first-child *{
+  color:#fff!important;
+}
+
+/* Works list: this is the largest table, so mimic NamuWiki's compact media
+   tables instead of allowing thumbnails/icons to dictate row height. */
+#wikiBody .table-works{
+  font-size:13px;
+}
+#wikiBody .table-works table{
+  width:100%;
+  min-width:760px;
+  table-layout:fixed;
+  border:2px solid var(--ideal-navy);
+}
+#wikiBody .table-works th,
+#wikiBody .table-works td{
+  padding:5px 7px;
+  line-height:1.38;
+}
+#wikiBody .table-works td:nth-child(1){
+  width:78px;
+  white-space:normal;
+  text-align:center;
+}
+#wikiBody .table-works td:nth-child(2){
+  width:48px;
+  text-align:center;
+}
+#wikiBody .table-works td:nth-child(3){
+  width:128px;
+  text-align:center;
+}
+#wikiBody .table-works td:nth-child(4){
+  width:auto;
+  text-align:left;
+}
+#wikiBody .table-works td:nth-child(5){
+  width:58px;
+  text-align:center;
+  white-space:nowrap;
+}
+
+/* Platform icons (YouTube / Shorts / Postype / X etc.) */
+#wikiBody .table-works td:nth-child(2) .doc-image{
+  width:auto!important;
+  height:auto!important;
+  max-width:18px!important;
+  max-height:18px!important;
+  display:inline-block;
+  object-fit:contain;
+}
+#wikiBody .table-works td:nth-child(2) a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+}
+
+/* Thumbnail column */
+#wikiBody .table-works td:nth-child(3) .doc-image{
+  width:auto!important;
+  height:auto!important;
+  max-width:112px!important;
+  max-height:64px!important;
+  object-fit:contain;
+  display:block;
+}
+
+/* Link column: the tiny source link mark should read like an inline wiki icon,
+   not like an illustration. */
+#wikiBody .table-works td:nth-child(5) .doc-image{
+  width:14px!important;
+  height:14px!important;
+  max-width:14px!important;
+  max-height:14px!important;
+  display:inline-block;
+  object-fit:contain;
+  vertical-align:-2px;
+  margin-right:2px;
+}
+#wikiBody .table-works td:nth-child(5) a,
+#wikiBody .table-works td:nth-child(5) strong{
+  font-size:12.5px;
+  line-height:1.2;
+}
+
+/* Secondary/source labels in the title cell should be visibly subordinate. */
+#wikiBody .table-works td:nth-child(4) span[style*="#999999"],
+#wikiBody .table-works td:nth-child(1) span[style*="#999999"]{
+  font-size:12px;
+  line-height:1.3;
+}
+
+/* The other list-like tables use the same NamuWiki density, without forcing
+   the media-specific column widths above. */
+#wikiBody .table-events table,
+#wikiBody .table-role-table table,
+#wikiBody .table-requirements table,
+#wikiBody .table-drive-shot table{
+  font-size:13.5px;
+  line-height:1.42;
+}
+
+/* Dark-mode grid contrast comparable to Espejo. Header stays document navy. */
+body.dark{
+  --wiki-table-grid:#3b3e42;
+}
+body.dark #wikiBody .table-scroll td{
+  background:#1d1f21;
+}
+body.dark #wikiBody .table-scroll th{
+  border-color:#3b3e42;
+}
+body.dark #wikiBody .table-works table{
+  border-color:#343778;
+}
+
+@media(max-width:620px){
+  :root{
+    --wiki-table-font:12.5px;
+    --wiki-table-pad-y:5px;
+    --wiki-table-pad-x:6px;
+  }
+  #wikiBody .table-works table{min-width:700px;}
+  #wikiBody .table-works td:nth-child(3){width:112px;}
+  #wikiBody .table-works td:nth-child(3) .doc-image{max-width:96px!important;max-height:56px!important;}
+}
+\n\n/* =========================================================
+   Works table — content-weighted columns + row-level links
+   ========================================================= */
+#wikiBody .table-works table{
+  width:100%;
+  min-width:820px;
+  table-layout:auto!important;
+}
+/* Small metadata columns stay compact; the title column consumes the remainder. */
+#wikiBody .table-works th:nth-child(1),
+#wikiBody .table-works td:nth-child(1){
+  width:100px!important;
+  min-width:92px;
+  max-width:112px;
+}
+#wikiBody .table-works th:nth-child(2),
+#wikiBody .table-works td:nth-child(2){
+  width:58px!important;
+  min-width:52px;
+  max-width:66px;
+}
+#wikiBody .table-works th:nth-child(3),
+#wikiBody .table-works td:nth-child(3){
+  width:170px!important;
+  min-width:150px;
+  max-width:182px;
+}
+#wikiBody .table-works th:nth-child(4),
+#wikiBody .table-works td:nth-child(4){
+  width:auto!important;
+  min-width:300px;
+}
+#wikiBody .table-works th:nth-child(5),
+#wikiBody .table-works td:nth-child(5){
+  width:68px!important;
+  min-width:60px;
+  max-width:76px;
+}
+#wikiBody .table-works td:nth-child(1) p{white-space:nowrap;}
+
+/* Give thumbnails enough presence without allowing them to dictate the table width. */
+#wikiBody .table-works td:nth-child(3) .doc-image{
+  max-width:154px!important;
+  max-height:88px!important;
+}
+
+/* SNS icon links stay icon-sized rather than creating a large clickable cell. */
+#wikiBody .table-works a.works-sns-link{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  vertical-align:middle;
+  text-decoration:none!important;
+  margin:0 1px;
+}
+#wikiBody .table-works a.works-sns-link .doc-image{
+  margin:0!important;
+}
+
+/* Project labels are real links now. Use the wiki accent colour rather than the old gray. */
+#wikiBody .table-works a.works-project-link,
+#wikiBody .table-works a.works-project-link span{
+  color:var(--espejo-link)!important;
+  text-decoration:none!important;
+  font-size:12px;
+  line-height:1.3;
+}
+#wikiBody .table-works a.works-project-link:hover,
+#wikiBody .table-works a.works-project-link:hover span{
+  color:var(--espejo-link-hover)!important;
+  text-decoration:underline!important;
+}
+
+/* Keep the visible link marker compact but make the entire marker clickable. */
+#wikiBody .table-works a.works-linkcell-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  white-space:nowrap;
+  text-decoration:none;
+}
+
+@media(max-width:620px){
+  #wikiBody .table-works table{min-width:760px;}
+  #wikiBody .table-works th:nth-child(3),
+  #wikiBody .table-works td:nth-child(3){width:142px!important;min-width:132px;}
+  #wikiBody .table-works td:nth-child(3) .doc-image{max-width:128px!important;max-height:72px!important;}
+  #wikiBody .table-works th:nth-child(4),
+  #wikiBody .table-works td:nth-child(4){min-width:270px;}
+}
+
+/* =========================================================
+   2026-09 heading hierarchy refinement
+   Every section heading remains visibly larger than body copy.
+   ========================================================= */
+:root{
+  --wiki-body-size:15px;
+  --wiki-h2-size:29px;
+  --wiki-h3-size:24px;
+  --wiki-h4-size:20.5px;
+}
+
+#wikiBody{
+  font-size:var(--wiki-body-size);
+}
+
+/* Strong, stepped hierarchy: 1. > 1.1. > 1.1.1. > body */
+#wikiBody .wiki-heading{
+  line-height:1.32;
+  font-weight:700;
+  letter-spacing:-.025em;
+  padding-left:1.35rem;
+  padding-right:3.35rem;
+}
+#wikiBody .wiki-heading[data-depth="2"]{
+  font-size:var(--wiki-h2-size);
+  margin-top:3rem;
+  margin-bottom:1.18rem;
+  padding-bottom:.48rem;
+}
+#wikiBody .wiki-heading[data-depth="3"]{
+  font-size:var(--wiki-h3-size);
+  margin-top:2.55rem;
+  margin-bottom:1rem;
+  padding-bottom:.43rem;
+}
+#wikiBody .wiki-heading[data-depth="4"]{
+  font-size:var(--wiki-h4-size);
+  margin-top:2.15rem;
+  margin-bottom:.88rem;
+  padding-bottom:.38rem;
+}
+
+#wikiBody .wiki-heading .section-number,
+#wikiBody .wiki-heading .section-title{
+  font-size:inherit;
+  font-weight:inherit;
+  line-height:inherit;
+}
+#wikiBody .wiki-heading .fold-btn{
+  top:.28em;
+  font-size:.58em;
+  width:1.15rem;
+  height:1.15rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#wikiBody .wiki-heading .section-edit{
+  bottom:.56rem;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0;
+}
+
+/* The first heading should not create an excessive void below the overview. */
+#wikiBody > .wiki-heading:first-child{
+  margin-top:2.45rem;
+}
+
+@media (max-width:720px){
+  :root{
+    --wiki-body-size:14px;
+    --wiki-h2-size:24px;
+    --wiki-h3-size:21px;
+    --wiki-h4-size:18px;
+  }
+  #wikiBody .wiki-heading{
+    padding-left:1.15rem;
+    padding-right:2.75rem;
+  }
+  #wikiBody .wiki-heading[data-depth="2"]{margin-top:2.45rem;margin-bottom:1rem;}
+  #wikiBody .wiki-heading[data-depth="3"]{margin-top:2.15rem;margin-bottom:.9rem;}
+  #wikiBody .wiki-heading[data-depth="4"]{margin-top:1.85rem;margin-bottom:.78rem;}
+  #wikiBody .wiki-heading .section-edit{font-size:10px;bottom:.48rem;}
+}
+
+/* 7.1.2 slot color references: keep every color visible in light/dark themes. */
+.slot-color-ref{
+  display:inline-flex;
+  align-items:center;
+  gap:.34em;
+  vertical-align:baseline;
+  white-space:nowrap;
+  margin-right:.26em;
+}
+.slot-color-swatch{
+  display:inline-block;
+  width:1.08em;
+  height:1.08em;
+  min-width:1.08em;
+  border:1px solid rgba(0,0,0,.38);
+  border-radius:2px;
+  background:var(--swatch);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.24);
+  vertical-align:-.14em;
+}
+.slot-color-ref code{
+  padding:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  font-size:.92em;
+}
+[data-theme="dark"] .slot-color-swatch,
+body.dark .slot-color-swatch{
+  border-color:rgba(255,255,255,.58);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.22);
+}
+@media (max-width:700px){
+  .slot-color-ref{margin-right:.14em}
+  .slot-color-swatch{width:1em;height:1em;min-width:1em}
+}

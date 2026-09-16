@@ -1,0 +1,30 @@
+{
+  "master_document_id": "1w8uXthXbiAuL--KCP7cq1oH4PJMa-TMRhJEE_6F4A4o",
+  "private_section_title_patterns": [
+    "^\\s*(?:\\d+(?:\\.\\d+)*\\.\\s*)?(?:🔒|\\[내부\\])",
+    "^\\s*10\\.2\\.\\s*학생들\\s*$"
+  ],
+  "private_table_keywords": [
+    "포스타입 예비 계정"
+  ],
+  "private_table_columns": [
+    "참여진",
+    "참여자",
+    "작업자"
+  ],
+  "strip_link_host_patterns": [
+    "(^|\\.)drive\\.google\\.com$",
+    "(^|\\.)docs\\.google\\.com$"
+  ],
+  "keep_link_url_patterns": [
+    "^https://ideal\\.sen\\.hs\\.io\\.kr(?:/|$)",
+    "^https://(?:www\\.)?youtube\\.com/",
+    "^https://youtu\\.be/",
+    "^https://(?:www\\.)?postype\\.com/",
+    "^https://(?:www\\.)?instagram\\.com/",
+    "^https://(?:www\\.)?tiktok\\.com/",
+    "^https://marpple\\.shop/"
+  ],
+  "public_footer_text": "업데이트는 계속된다!",
+  "source_title": "팀 이상(종합예술팀) - 이상위키"
+}
