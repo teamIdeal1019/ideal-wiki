@@ -12,26 +12,40 @@ html = path.read_text(encoding='utf-8')
 soup = BeautifulSoup(html, 'html.parser')
 errors = []
 
-# 공개본에 절대로 남으면 안 되는 구조/열
-text = soup.get_text(' ', strip=True)
-for forbidden in ['10.2. 학생들']:
-    if forbidden in text:
-        errors.append(f'private section leaked: {forbidden}')
+# 1) Private sections must not survive as headings.
+for h in soup.select('.wiki-heading'):
+    title = h.get_text(' ', strip=True)
+    if re.search(r'(^|\s)10\.2\.\s*학생들(?:\s|$)', title) or re.search(r'(^|\s)학생들(?:\s|$)', title):
+        errors.append(f'private student section heading leaked: {title}')
 
-for th in soup.find_all(['th','td']):
-    if th.get_text(' ', strip=True) in {'참여진','참여자','작업자'}:
-        errors.append(f'private table column leaked: {th.get_text(strip=True)}')
+# 2) Private columns must be removed structurally, not just unlinked.
+for cell in soup.find_all(['th', 'td']):
+    value = re.sub(r'\s+', ' ', cell.get_text(' ', strip=True)).strip()
+    if value in {'참여진', '참여자', '작업자'}:
+        errors.append(f'private table column leaked: {value}')
 
-# Google Docs/Drive/Sheets 내부 URL은 외부 사이트에서 실제 링크가 되면 안 됨
+# 3) Student roster table must be gone in its entirety.
+for table in soup.find_all('table'):
+    cells = [re.sub(r'\s+', ' ', c.get_text(' ', strip=True)).strip() for c in table.find_all(['th','td'])]
+    first = cells[:6]
+    has_roster_signature = (
+        '기수' in first and '활동명' in first and
+        any(v.replace(' ', '') == '한줄메시지' for v in first)
+    )
+    if has_roster_signature:
+        errors.append('private student roster table leaked')
+
+# 4) Google Docs/Drive/Sheets internal URLs must never remain clickable.
 for a in soup.find_all('a', href=True):
     href = a['href']
     if href.startswith('#'):
         continue
     host = (urlparse(href).hostname or '').lower()
-    if host == 'drive.google.com' or host == 'docs.google.com' or host.endswith('.drive.google.com') or host.endswith('.docs.google.com'):
+    if (host == 'drive.google.com' or host == 'docs.google.com' or
+            host.endswith('.drive.google.com') or host.endswith('.docs.google.com')):
         errors.append(f'private Google link leaked: {href}')
 
-# 기본 뼈대 검증
+# Basic build integrity.
 if not soup.select_one('#wikiBody'):
     errors.append('wikiBody missing')
 if len(soup.select('.wiki-heading')) < 8:

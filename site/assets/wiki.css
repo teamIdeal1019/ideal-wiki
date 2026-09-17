@@ -937,3 +937,59 @@ body.dark .slot-color-swatch{
   .slot-color-ref{margin-right:.14em}
   .slot-color-swatch{width:1em;height:1em;min-width:1em}
 }
+
+/* =========================================================
+   Direct-deploy privacy/legibility hotfix — 2026-09-17
+   ========================================================= */
+
+/* Generic Docs-API tables lost the original cell fill. A white text run on
+   Espejo's pale header became nearly invisible, so public table headers use
+   Team Ideal navy consistently. */
+#wikiBody .table-scroll th{
+  background:var(--ideal-navy)!important;
+  color:#fff!important;
+  border-color:#343778!important;
+  font-weight:700;
+  text-align:center;
+}
+#wikiBody .table-scroll th,
+#wikiBody .table-scroll th *{
+  color:#fff!important;
+}
+body.dark #wikiBody .table-scroll th{
+  background:var(--ideal-navy)!important;
+  color:#fff!important;
+  border-color:#4a4e91!important;
+}
+
+/* Preserve the displayed Docs size for tiny inline/link icons. This prevents
+   a 16–25 px link glyph from expanding to the intrinsic bitmap dimensions. */
+#wikiBody .doc-inline-icon{
+  display:inline-block!important;
+  width:auto!important;
+  height:auto!important;
+  max-width:1.25em!important;
+  max-height:1.25em!important;
+  object-fit:contain!important;
+  vertical-align:-.16em!important;
+  margin:0 .12em!important;
+}
+#wikiBody a.image-link{
+  display:inline-flex;
+  align-items:center;
+  line-height:1;
+  vertical-align:middle;
+}
+#wikiBody a.image-link .doc-inline-icon{
+  margin:0 .08em!important;
+}
+
+/* Existing purpose-specific icon rules stay compact too. */
+#wikiBody .drive-faux-icon,
+#wikiBody .source-link-icon{
+  width:1em!important;
+  height:1em!important;
+  max-width:1em!important;
+  max-height:1em!important;
+  object-fit:contain!important;
+}

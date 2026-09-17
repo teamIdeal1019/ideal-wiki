@@ -170,6 +170,34 @@ def image_ext(content_type, uri):
     return '.png'
 
 
+def dimension_to_px(dim):
+    """Convert a Google Docs Dimension to CSS pixels.
+
+    Docs inline-object sizes are normally reported in points. Preserving the
+    display size is important for tiny link/platform icons: without it the
+    browser renders the source bitmap at its intrinsic size.
+    """
+    if not dim or dim.get('magnitude') is None:
+        return None
+    try:
+        value = float(dim.get('magnitude'))
+    except (TypeError, ValueError):
+        return None
+    unit = str(dim.get('unit') or 'PT').upper()
+    if unit == 'PT':
+        value *= 96.0 / 72.0
+    # Defensive support in case an alternate unit is ever returned.
+    elif unit == 'IN':
+        value *= 96.0
+    elif unit == 'CM':
+        value *= 96.0 / 2.54
+    return max(1, round(value, 2))
+
+
+def normalized_space(text):
+    return re.sub(r'\s+', ' ', text or '').strip()
+
+
 class Renderer:
     def __init__(self, context, out_dir, creds, rules):
         self.inline_objects = context.get('inlineObjects', {})
@@ -246,7 +274,29 @@ class Renderer:
             oid = element['inlineObjectElement'].get('inlineObjectId')
             src = self.download_inline_image(oid) if oid else None
             if src:
-                return f'<img class="doc-image" loading="lazy" src="{src}" alt=""/>'
+                obj = self.inline_objects.get(oid, {}) if oid else {}
+                emb = (obj.get('inlineObjectProperties') or {}).get('embeddedObject', {})
+                size = emb.get('size') or {}
+                width = dimension_to_px(size.get('width'))
+                height = dimension_to_px(size.get('height'))
+                classes = ['doc-image']
+                if width and height and max(width, height) <= 40:
+                    classes.append('doc-inline-icon')
+                styles = []
+                if width:
+                    styles.append(f'--img-w:{width:g}px')
+                if height:
+                    styles.append(f'--img-h:{height:g}px')
+                style_attr = f' style="{";".join(styles)}"' if styles else ''
+                image_html = (f'<img class="{" ".join(classes)}" loading="lazy" '
+                              f'src="{src}" alt=""{style_attr}/>')
+                # Image links are stored on imageProperties rather than a textRun.
+                img_link = (emb.get('imageProperties') or {}).get('link') or {}
+                url = img_link.get('url')
+                if url and not should_strip_link(url, self.rules):
+                    return (f'<a class="external image-link" href="{html.escape(url, quote=True)}" '
+                            f'target="_blank" rel="noopener noreferrer">{image_html}</a>')
+                return image_html
         if 'horizontalRule' in element:
             return '<hr/>'
         return ''
@@ -298,14 +348,31 @@ class Renderer:
 
     def render_table(self, table, nested=False):
         fulltext = structural_plain_text({'table': table})
+        normalized_fulltext = normalized_space(fulltext)
+
+        # Entire private tables must disappear, not merely lose their links.
         if any(k in fulltext for k in self.rules.get('private_table_keywords', [])):
             return ''
+        for pattern in self.rules.get('private_table_text_patterns', []):
+            if re.search(pattern, normalized_fulltext, re.I):
+                return ''
+
         rows = table.get('tableRows', [])
         if not rows:
             return ''
         headers = self.table_header_texts(table)
-        remove_cols = {i for i, h in enumerate(headers) if any(k == h.strip() for k in self.rules.get('private_table_columns', []))}
-        works = ('업로드일' in headers and ('플랫폼' in headers or any('플랫' in h for h in headers)))
+        normalized_headers = [normalized_space(h) for h in headers]
+        private_cols = {normalized_space(k).replace(' ', '') for k in self.rules.get('private_table_columns', [])}
+        remove_cols = {
+            i for i, h in enumerate(normalized_headers)
+            if h.replace(' ', '') in private_cols
+        }
+
+        works = ('업로드일' in normalized_headers and
+                 ('플랫폼' in normalized_headers or any('플랫' in h for h in normalized_headers)))
+        events = ('행사명' in normalized_headers and
+                  any(h in {'행사 일시', '일시', '날짜'} for h in normalized_headers))
+
         out_rows = []
         for ri, row in enumerate(rows):
             cells = []
@@ -313,9 +380,18 @@ class Renderer:
                 if ci in remove_cols:
                     continue
                 cells.append(self.render_cell(cell, header=(ri == 0)))
-            out_rows.append('<tr>' + ''.join(cells) + '</tr>')
-        cls = 'table-scroll table-works' if works else 'table-scroll'
-        return f'<div class="{cls}"><table>{"".join(out_rows)}</table></div>'
+            # If filtering removed every cell from a row, do not leave a ghost row.
+            if cells:
+                out_rows.append('<tr>' + ''.join(cells) + '</tr>')
+        if not out_rows:
+            return ''
+
+        classes = ['table-scroll']
+        if works:
+            classes.append('table-works')
+        elif events:
+            classes.append('table-events')
+        return f'<div class="{" ".join(classes)}"><table>{"".join(out_rows)}</table></div>'
 
     def render_infobox(self, table):
         rows = table.get('tableRows', [])
@@ -351,6 +427,7 @@ def build_public_model(context, rules, renderer):
     info_table = None
     skip_depth = None
     seen_first_heading = False
+
     for st in content:
         if 'paragraph' in st:
             p = st['paragraph']
@@ -358,11 +435,15 @@ def build_public_model(context, rules, renderer):
             pdepth = named_heading_depth(p)
             if not pdepth and len(text) < 80 and HEADING_RE.match(text):
                 pdepth = heading_depth(text)
+
+            # While inside a private section, skip paragraphs, tables, images and
+            # every other structural element until a same/higher-level heading.
             if skip_depth is not None:
                 if pdepth is not None and pdepth <= skip_depth:
                     skip_depth = None
                 else:
                     continue
+
             if pdepth is not None and is_private_heading(text, rules):
                 skip_depth = pdepth
                 continue
@@ -373,7 +454,14 @@ def build_public_model(context, rules, renderer):
             rendered = renderer.render_paragraph(p)
             if rendered:
                 body_html.append(rendered)
-        elif 'table' in st:
+            continue
+
+        # Critical privacy fix: tables that belong to a private section must be
+        # skipped as part of that section. The old build only skipped paragraphs.
+        if skip_depth is not None:
+            continue
+
+        if 'table' in st:
             tbl = st['table']
             txt = structural_plain_text(st)
             if not seen_first_heading and info_table is None and ('팀명' in txt and '업종명' in txt):
