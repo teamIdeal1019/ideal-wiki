@@ -143,6 +143,60 @@ def is_private_heading(text, rules):
     return any(re.search(p, text, re.I) for p in rules.get('private_section_title_patterns', []))
 
 
+
+def extract_infobox_table(table):
+    """Extract the actual team infobox from the source's combined TOC+infobox table.
+
+    The master Google Doc stores the visual TOC on the left and the team
+    information box on the right inside one 4-column table. Rendering that
+    whole table as an infobox turns the TOC into navy header cells. Detect the
+    label column (팀명/업종명/설립일/...) and project only that column plus the
+    value column immediately to its right.
+    """
+    rows = table.get('tableRows', [])
+    if not rows:
+        return None
+
+    labels = {
+        '팀명', '업종명', '설립일', '팀장', '관리자', '부장',
+        '슬로건', '최우선가치', '상징색', '플랫폼', '팀원 전용'
+    }
+    scores = {}
+    max_cols = 0
+    for row in rows:
+        cells = row.get('tableCells', [])
+        max_cols = max(max_cols, len(cells))
+        for ci, cell in enumerate(cells):
+            txt = normalized_space(' '.join(structural_plain_text(c) for c in cell.get('content', [])))
+            if txt in labels:
+                scores[ci] = scores.get(ci, 0) + 1
+
+    if not scores:
+        return None
+    label_col = max(scores, key=scores.get)
+    value_col = label_col + 1
+    if value_col >= max_cols:
+        return None
+
+    projected_rows = []
+    for row in rows:
+        cells = row.get('tableCells', [])
+        picked = []
+        for ci in (label_col, value_col):
+            if ci < len(cells):
+                picked.append(cells[ci])
+        if picked:
+            new_row = dict(row)
+            new_row['tableCells'] = picked
+            projected_rows.append(new_row)
+
+    if not projected_rows:
+        return None
+    out = dict(table)
+    out['tableRows'] = projected_rows
+    out['columns'] = 2
+    return out
+
 def should_strip_link(url, rules):
     if not url:
         return False
@@ -397,26 +451,36 @@ class Renderer:
         rows = table.get('tableRows', [])
         if not rows:
             return None
-        # Generic conversion but with the same outer class as the current site.
         out = ['<aside class="infobox-wrap"><table class="infobox">']
         for ri, row in enumerate(rows):
             visible = []
             for cell in row.get('tableCells', []):
-                txt = ' '.join(structural_plain_text(c) for c in cell.get('content', [])).strip()
+                txt = normalized_space(' '.join(structural_plain_text(c) for c in cell.get('content', [])))
                 content = ''.join(
                     self.render_paragraph(st['paragraph'], force_normal=True) if 'paragraph' in st else self.render_table(st['table'], nested=True)
                     for st in cell.get('content', [])
-                )
+                ).strip()
                 visible.append((txt, content))
-            if not visible:
+
+            # Completely empty spacer rows should not create giant blank cells.
+            if not visible or not any(txt or content for txt, content in visible):
                 continue
-            if ri == 0 and len(visible) == 1:
+
+            # The projected first row contains the title in the left cell and an
+            # empty merged companion cell. Treat it as the infobox caption.
+            if ri == 0 and visible and '팀 이상' in visible[0][0] and not any(v[0] or v[1] for v in visible[1:]):
                 out.append(f'<caption>{visible[0][1]}</caption>')
                 continue
-            if len(visible) == 1:
-                out.append(f'<tr><td class="hero" colspan="2">{visible[0][1]}</td></tr>')
-            else:
-                out.append(f'<tr><th>{visible[0][1]}</th><td>{visible[1][1]}</td></tr>')
+
+            # Logo/hero rows often have content in only one of the two cells.
+            nonempty = [(txt, content) for txt, content in visible if txt or content]
+            if len(nonempty) == 1:
+                out.append(f'<tr><td class="hero" colspan="2">{nonempty[0][1]}</td></tr>')
+                continue
+
+            left = visible[0][1] if len(visible) > 0 else ''
+            right = visible[1][1] if len(visible) > 1 else ''
+            out.append(f'<tr><th>{left}</th><td>{right}</td></tr>')
         out.append('</table></aside>')
         return ''.join(out)
 
@@ -465,7 +529,9 @@ def build_public_model(context, rules, renderer):
             tbl = st['table']
             txt = structural_plain_text(st)
             if not seen_first_heading and info_table is None and ('팀명' in txt and '업종명' in txt):
-                info_table = tbl
+                # The source uses one wide layout table: TOC on the left, actual
+                # team infobox on the right. Keep only the infobox columns.
+                info_table = extract_infobox_table(tbl) or tbl
                 continue
             rendered = renderer.render_table(tbl)
             if rendered:
