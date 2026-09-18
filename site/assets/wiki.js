@@ -9,8 +9,48 @@ if(theme) theme.addEventListener('click',()=>{document.body.classList.toggle('da
 if(localStorage.getItem('idealwiki-dark')==='1') document.body.classList.add('dark');
 const backtop=$('#backtop'); if(backtop) backtop.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
 
-const headings=$$('.wiki-heading');
-headings.forEach(h=>{const btn=$('.fold-btn',h);if(!btn)return;btn.textContent='▾';btn.addEventListener('click',()=>{const depth=+h.dataset.depth;const collapsed=h.classList.toggle('section-collapsed');btn.textContent=collapsed?'▸':'▾';let n=h.nextElementSibling;while(n){if(n.classList?.contains('wiki-heading') && +n.dataset.depth<=depth)break;n.classList.toggle('section-hidden',collapsed);n=n.nextElementSibling;}})});
+const wikiBody=$('#wikiBody');
+const headings=wikiBody?$$('.wiki-heading',wikiBody):[];
+
+function setFoldA11y(h){
+  const btn=$('.fold-btn',h);
+  if(!btn)return;
+  const collapsed=h.classList.contains('section-collapsed');
+  btn.setAttribute('aria-expanded',collapsed?'false':'true');
+  btn.setAttribute('aria-label',collapsed?'문단 펼치기':'문단 접기');
+  btn.title=collapsed?'문단 펼치기':'문단 접기';
+}
+
+function recomputeSectionVisibility(){
+  if(!wikiBody)return;
+  $$('.section-hidden',wikiBody).forEach(el=>el.classList.remove('section-hidden'));
+
+  // A heading owns every following node until the next heading whose depth is
+  // the same or higher.  Recalculate from all collapsed headings every time so
+  // nested collapse states survive when a parent is folded and reopened.
+  headings.filter(h=>h.classList.contains('section-collapsed')).forEach(h=>{
+    const depth=Number(h.dataset.depth||2);
+    let n=h.nextElementSibling;
+    while(n){
+      if(n.classList?.contains('wiki-heading') && Number(n.dataset.depth||2)<=depth)break;
+      n.classList.add('section-hidden');
+      n=n.nextElementSibling;
+    }
+  });
+  headings.forEach(setFoldA11y);
+}
+
+headings.forEach(h=>{
+  const btn=$('.fold-btn',h);
+  if(!btn)return;
+  setFoldA11y(h);
+  btn.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    h.classList.toggle('section-collapsed');
+    recomputeSectionVisibility();
+  });
+});
 const entries=headings.map(h=>({text:(($('.section-number',h)?.textContent||'')+' '+($('.section-title',h)?.textContent||'')).trim(),id:h.id}));
 
 function bindSearch(inputSel,buttonSel,sugSel){

@@ -993,3 +993,124 @@ body.dark #wikiBody .table-scroll th{
   max-height:1em!important;
   object-fit:contain!important;
 }
+
+
+/* =========================================================
+   2026-09-17 v4 — readable minimum type, Espejo quote, real section folding
+   ========================================================= */
+
+/* Espejo's documented default body size is 15px. Keep large headings exactly
+   as tuned above, but stop secondary/article text from dropping into 9–12px. */
+:root{
+  --wiki-body-size:15px;
+  --wiki-readable-small:13px;
+  --wiki-table-font:14.5px;
+}
+body{font-size:15px;}
+.doc-meta,.category-box,.category-box b{font-size:13px!important;}
+.action-row button,.nav-action,.profile-btn{font-size:13px;}
+.action-row .watch-count{font-size:12px;line-height:16px;}
+.toc-list{font-size:15px!important;line-height:1.68;}
+.infobox{font-size:14px!important;}
+.infobox caption small{font-size:14px!important;}
+.side-title,.live-keyword,.live-keyword a,.recent-list a{font-size:14px;}
+.recent-list time{font-size:12.5px;}
+#wikiBody{font-size:15px;}
+#wikiBody p,#wikiBody .bullet-item,#wikiBody .numbered-item{font-size:15px;}
+#wikiBody .table-scroll,#wikiBody .table-scroll table,
+#wikiBody .table-scroll th,#wikiBody .table-scroll td{font-size:var(--wiki-table-font)!important;}
+#wikiBody .table-works,#wikiBody .table-events{font-size:14px!important;}
+#wikiBody .wiki-heading .section-edit{font-size:13px!important;}
+#wikiBody .slot-color-ref code{font-size:14px;}
+
+@media(max-width:720px){
+  :root{--wiki-body-size:15px;--wiki-table-font:14px;}
+  body,#wikiBody{font-size:15px!important;}
+  #wikiBody .wiki-heading .section-edit{font-size:12.5px!important;}
+  .category-box{font-size:13px!important;}
+}
+
+/* NamuWiki-style quotation/callout: grey panel, neutral grey bar, no navy
+   header treatment. The source uses a one-cell layout table for this block. */
+#wikiBody .table-quote{overflow:visible;margin:1rem 0 1.35rem;}
+#wikiBody .table-quote table{
+  width:100%;
+  margin:0;
+  border:0!important;
+  border-left:5px solid #b7b7b7!important;
+  background:#f1f1f1!important;
+  box-shadow:none!important;
+}
+#wikiBody .table-quote th,#wikiBody .table-quote td{
+  border:0!important;
+  background:#f1f1f1!important;
+  color:#333!important;
+  padding:.9rem 1.05rem!important;
+  text-align:left!important;
+  font-weight:400!important;
+}
+#wikiBody .table-quote th *,#wikiBody .table-quote td *{color:#333!important;}
+#wikiBody .table-quote p{margin:.2rem 0 .48rem;}
+#wikiBody .table-quote p:last-child{margin-bottom:.1rem;}
+body.dark #wikiBody .table-quote table{
+  background:#2b2d30!important;
+  border-left-color:#686c72!important;
+}
+body.dark #wikiBody .table-quote th,body.dark #wikiBody .table-quote td{
+  background:#2b2d30!important;
+  color:#e2e2e2!important;
+}
+body.dark #wikiBody .table-quote th *,body.dark #wikiBody .table-quote td *{color:#e2e2e2!important;}
+
+/* One-row rule panels are content cells, not data-table header rows. */
+#wikiBody .table-rule td{
+  background:#f5f5f5!important;
+  color:var(--espejo-text)!important;
+}
+body.dark #wikiBody .table-rule td{background:#2d2f34!important;color:#e4e4e4!important;}
+
+/* Hierarchy-aware section folding. The old selector only hid the first
+   adjacent node, so the icon changed while most of the section stayed open. */
+#wikiBody .section-hidden{display:none!important;}
+#wikiBody .wiki-heading{padding-left:1.85rem;}
+#wikiBody .wiki-heading .fold-btn{
+  position:absolute;
+  left:-.08rem;
+  top:50%;
+  transform:translateY(-58%);
+  width:1.72rem;
+  height:1.72rem;
+  padding:0;
+  border:0;
+  border-radius:3px;
+  background:transparent;
+  color:#60656b;
+  cursor:pointer;
+  font-size:0!important;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#wikiBody .wiki-heading .fold-btn:hover{background:rgba(0,0,0,.055);color:#30343a;}
+#wikiBody .wiki-heading .fold-btn::before{
+  content:"";
+  width:0;
+  height:0;
+  border-left:6px solid transparent;
+  border-right:6px solid transparent;
+  border-top:9px solid currentColor;
+  transform:translateY(2px);
+}
+#wikiBody .wiki-heading.section-collapsed .fold-btn::before{
+  border-top:6px solid transparent;
+  border-bottom:6px solid transparent;
+  border-left:9px solid currentColor;
+  border-right:0;
+  transform:translateX(2px);
+}
+body.dark #wikiBody .wiki-heading .fold-btn{color:#a8aaad;}
+body.dark #wikiBody .wiki-heading .fold-btn:hover{background:rgba(255,255,255,.07);color:#ddd;}
+
+/* TOC disclosure uses the same visual language and a comfortable hit target. */
+.toc-toggle{font-size:17px!important;min-width:28px;min-height:28px;line-height:1;}

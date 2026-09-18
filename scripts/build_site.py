@@ -372,7 +372,7 @@ class Renderer:
             self.headings.append({'number': number, 'title': title, 'depth': depth, 'anchor': anchor})
             tag = 'h2' if depth <= 2 else ('h3' if depth == 3 else 'h4')
             return (f'<{tag} class="wiki-heading" data-depth="{depth}" id="{anchor}">'
-                    f'<button aria-label="문단 접기" class="fold-btn">▾</button>'
+                    f'<button aria-label="문단 접기" aria-expanded="true" class="fold-btn" title="문단 접기" type="button"></button>'
                     f'<a class="internal section-number" href="#{anchor}">{html.escape(number)}</a>'
                     f'<span class="section-title"> {html.escape(title)}</span>'
                     f'<button class="section-edit" title="정적 사이트에서는 편집할 수 없습니다" type="button">[편집]</button>'
@@ -422,10 +422,33 @@ class Renderer:
             if h.replace(' ', '') in private_cols
         }
 
+        row_count = len(rows)
+        col_count = max((len(r.get('tableCells', [])) for r in rows), default=0)
+        single_cell = (row_count == 1 and col_count == 1)
+
         works = ('업로드일' in normalized_headers and
                  ('플랫폼' in normalized_headers or any('플랫' in h for h in normalized_headers)))
         events = ('행사명' in normalized_headers and
                   any(h in {'행사 일시', '일시', '날짜'} for h in normalized_headers))
+        logo_gallery = (row_count >= 2 and col_count == 3 and
+                        ('팀 이상 버전 2' in normalized_fulltext or '이상고등학교' in normalized_fulltext))
+        role_table = ('부서 역할' in normalized_headers and '기타 역할' in normalized_headers)
+        drive_shot = ('팀 이상 공유 폴더 내부' in normalized_fulltext)
+        requirements = ('레이드모집 생략 요건' in normalized_fulltext or
+                        '파티모집 생략 요건' in normalized_fulltext)
+
+        # Google Docs uses short one-cell layout tables for quotation/callout boxes.
+        # They are not data tables and must never be promoted to a navy <th>.
+        # Long one-cell tables in the rules section are likewise content panels,
+        # not headers.  This distinction restores the Espejo-like grey quote UI.
+        quote_like = (single_cell and len(normalized_fulltext) <= 260 and
+                      not re.search(r'(^|\n)\s*\d+\.', fulltext) and
+                      '최소 경고' not in fulltext and '최소 권고' not in fulltext)
+        rule_like = (single_cell and not quote_like)
+
+        # Only real multi-row data tables receive header cells.  The previous
+        # build made row 1 of every table a <th>, turning quotes/rule panels navy.
+        header_first_row = (row_count > 1 and not quote_like and not rule_like)
 
         out_rows = []
         for ri, row in enumerate(rows):
@@ -433,7 +456,7 @@ class Renderer:
             for ci, cell in enumerate(row.get('tableCells', [])):
                 if ci in remove_cols:
                     continue
-                cells.append(self.render_cell(cell, header=(ri == 0)))
+                cells.append(self.render_cell(cell, header=(header_first_row and ri == 0)))
             # If filtering removed every cell from a row, do not leave a ghost row.
             if cells:
                 out_rows.append('<tr>' + ''.join(cells) + '</tr>')
@@ -445,6 +468,18 @@ class Renderer:
             classes.append('table-works')
         elif events:
             classes.append('table-events')
+        elif quote_like:
+            classes.append('table-quote')
+        elif rule_like:
+            classes.append('table-rule')
+        elif logo_gallery:
+            classes.append('table-logo-gallery')
+        elif role_table:
+            classes.append('table-role-table')
+        elif drive_shot:
+            classes.append('table-drive-shot')
+        elif requirements:
+            classes.append('table-requirements')
         return f'<div class="{" ".join(classes)}"><table>{"".join(out_rows)}</table></div>'
 
     def render_infobox(self, table):
