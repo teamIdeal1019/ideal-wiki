@@ -352,7 +352,13 @@ class Renderer:
                             f'target="_blank" rel="noopener noreferrer">{image_html}</a>')
                 return image_html
         if 'horizontalRule' in element:
-            return '<hr/>'
+            # Google Docs source documents may contain horizontal rules directly
+            # below section headings. The public wiki already draws its own
+            # heading divider with CSS, so rendering the source rule produces
+            # an unintended double line. Filter source-authored rules by default.
+            if self.rules.get('strip_source_horizontal_rules', True):
+                return ''
+            return '<hr class="source-horizontal-rule"/>'
         return ''
 
     def render_paragraph(self, paragraph, force_normal=False):
@@ -482,6 +488,24 @@ class Renderer:
             classes.append('table-requirements')
         return f'<div class="{" ".join(classes)}"><table>{"".join(out_rows)}</table></div>'
 
+    def align_infobox_link_rows(self, fragment):
+        """Keep the tiny source-link icon and its label on one visual baseline.
+
+        Google Docs stores the icon and link text as separate inline elements.
+        Browsers then align the bitmap on the text baseline independently, which
+        makes the icon look lower/higher than the label. Wrap each icon+link pair
+        so CSS can align them as a single inline-flex unit.
+        """
+        if 'source-link-icon' not in fragment:
+            return fragment
+        return re.sub(
+            r'(<img\b[^>]*class="[^"]*source-link-icon[^"]*"[^>]*/?>)\s*'
+            r'(<a\b[^>]*class="[^"]*external[^"]*"[^>]*>.*?</a>)',
+            r'<span class="infobox-link-row">\1\2</span>',
+            fragment,
+            flags=re.I | re.S,
+        )
+
     def render_infobox(self, table):
         rows = table.get('tableRows', [])
         if not rows:
@@ -515,6 +539,8 @@ class Renderer:
 
             left = visible[0][1] if len(visible) > 0 else ''
             right = visible[1][1] if len(visible) > 1 else ''
+            left = self.align_infobox_link_rows(left)
+            right = self.align_infobox_link_rows(right)
             out.append(f'<tr><th>{left}</th><td>{right}</td></tr>')
         out.append('</table></aside>')
         return ''.join(out)

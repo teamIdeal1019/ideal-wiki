@@ -30,5 +30,6 @@
   "source_title": "팀 이상(종합예술팀) - 이상위키",
   "private_table_text_patterns": [
     "(?:^|\\s)기수\\s+활동명\\s+한\\s*줄\\s*메시지(?:\\s|$)"
-  ]
+  ],
+  "strip_source_horizontal_rules": true
 }

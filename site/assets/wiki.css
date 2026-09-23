@@ -1114,3 +1114,41 @@ body.dark #wikiBody .wiki-heading .fold-btn:hover{background:rgba(255,255,255,.0
 
 /* TOC disclosure uses the same visual language and a comfortable hit target. */
 .toc-toggle{font-size:17px!important;min-width:28px;min-height:28px;line-height:1;}
+
+/* =========================================================
+   2026-09-24 — infobox source-link icon/text alignment
+   Google Docs exports the tiny link glyph and its label as separate inline
+   elements. Treat each pair as one flex unit so their optical baselines match.
+   ========================================================= */
+#wikiBody .infobox .infobox-link-row{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.22em;
+  line-height:1.45;
+  vertical-align:middle;
+  white-space:nowrap;
+}
+#wikiBody .infobox .infobox-link-row .source-link-icon{
+  display:block!important;
+  flex:0 0 auto;
+  width:1em!important;
+  height:1em!important;
+  max-width:1em!important;
+  max-height:1em!important;
+  margin:0!important;
+  vertical-align:middle!important;
+  object-fit:contain!important;
+}
+#wikiBody .infobox .infobox-link-row > a.external{
+  display:block;
+  line-height:1.45;
+  vertical-align:middle;
+}
+/* Source rows can arrive either as a single paragraph with <br> separators or
+   as multiple paragraphs. Remove browser paragraph margins so every line uses
+   the same vertical rhythm. */
+#wikiBody .infobox td:has(.infobox-link-row) > p{
+  margin:0;
+  line-height:1.55;
+}
