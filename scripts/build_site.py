@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString, Tag
 from google.oauth2 import service_account
 from google.auth.transport.requests import AuthorizedSession
 from googleapiclient.discovery import build
@@ -489,67 +489,115 @@ class Renderer:
         return f'<div class="{" ".join(classes)}"><table>{"".join(out_rows)}</table></div>'
 
     def align_infobox_link_rows(self, fragment):
-        """Group each infobox icon+label line into one inline-flex unit.
+        """Normalize infobox icon/link lists into one shared two-column stack.
 
-        The live Docs renderer emits tiny source icons as ``doc-inline-icon``.
-        Depending on the source link/privacy filter, a line can be any of:
-        ``img + a``, ``a(image) + a(text)``, or ``img + span``.  The previous
-        hotfix only looked for the legacy ``source-link-icon`` + ``a`` shape,
-        so it never touched the live generated markup.  Split paragraphs on
-        <br> boundaries and wrap *any* line containing a tiny inline icon.
+        Google Docs centers each icon+label line independently. Because the
+        labels have different lengths, that makes the green link icons zig-zag
+        horizontally. A cell-wide stack fixes this: every row shares one icon
+        column and one text column, while the stack itself remains centered.
         """
-        if 'doc-inline-icon' not in fragment and 'source-link-icon' not in fragment:
+        if ('doc-inline-icon' not in fragment and
+                'source-link-icon' not in fragment and
+                'infobox-link-row' not in fragment):
             return fragment
 
         soup = BeautifulSoup(fragment, 'html.parser')
 
-        def has_tiny_icon(nodes):
-            for node in nodes:
-                if not getattr(node, 'name', None):
-                    continue
-                classes = node.get('class') or []
-                if 'doc-inline-icon' in classes or 'source-link-icon' in classes:
-                    return True
-                if node.select_one('.doc-inline-icon, .source-link-icon'):
-                    return True
-            return False
+        def is_blank(node):
+            return isinstance(node, NavigableString) and not str(node).strip()
 
-        def wrap_lines(container):
-            children = list(container.contents)
-            if not children:
-                return
-            lines = []
-            current = []
-            for child in children:
-                if getattr(child, 'name', None) == 'br':
-                    lines.append(current)
+        def tiny_icon_in(node):
+            if not isinstance(node, Tag):
+                return None
+            classes = node.get('class') or []
+            if 'doc-inline-icon' in classes or 'source-link-icon' in classes:
+                return node
+            return node.select_one('.doc-inline-icon, .source-link-icon')
+
+        def split_on_br(nodes):
+            lines, current = [], []
+            for child in nodes:
+                if isinstance(child, Tag) and child.name == 'br':
+                    if any(not is_blank(n) for n in current):
+                        lines.append(current)
                     current = []
                 else:
                     current.append(child)
-            lines.append(current)
+            if any(not is_blank(n) for n in current):
+                lines.append(current)
+            return lines
 
-            container.clear()
-            for i, nodes in enumerate(lines):
-                if has_tiny_icon(nodes):
-                    row = soup.new_tag('span')
-                    row['class'] = ['infobox-link-row']
-                    for node in nodes:
-                        row.append(node)
-                    container.append(row)
-                else:
-                    for node in nodes:
-                        container.append(node)
-                if i < len(lines) - 1:
-                    container.append(soup.new_tag('br'))
-
-        paragraphs = soup.find_all('p')
-        if paragraphs:
-            for paragraph in paragraphs:
-                wrap_lines(paragraph)
+        existing_rows = soup.select('.infobox-link-row')
+        if existing_rows:
+            lines = [list(row.contents) for row in existing_rows]
         else:
-            wrap_lines(soup)
+            top_nodes = [n for n in soup.contents if not is_blank(n)]
+            lines = []
+            if top_nodes and all(isinstance(n, Tag) and n.name == 'p' for n in top_nodes):
+                for pnode in top_nodes:
+                    lines.extend(split_on_br(list(pnode.contents)))
+            else:
+                lines = split_on_br(list(soup.contents))
 
-        return ''.join(str(node) for node in soup.contents)
+        if not lines:
+            return fragment
+        if not all(any(tiny_icon_in(n) is not None for n in line if not is_blank(n)) for line in lines):
+            return fragment
+
+        stack = soup.new_tag('span')
+        stack['class'] = ['infobox-link-list']
+
+        for line in lines:
+            meaningful = [n for n in line if not is_blank(n)]
+            icon_index = next((i for i, n in enumerate(meaningful)
+                               if tiny_icon_in(n) is not None), None)
+            if icon_index is None:
+                continue
+
+            row = soup.new_tag('span')
+            row['class'] = ['infobox-link-row']
+            icon_box = soup.new_tag('span')
+            icon_box['class'] = ['infobox-link-icon']
+            label_box = soup.new_tag('span')
+            label_box['class'] = ['infobox-link-label']
+
+            icon_node = meaningful[icon_index]
+            if (isinstance(icon_node, Tag) and
+                    'infobox-link-row' in (icon_node.get('class') or [])):
+                nested = [n for n in list(icon_node.contents) if not is_blank(n)]
+                nested_icon_i = next((i for i, n in enumerate(nested)
+                                      if tiny_icon_in(n) is not None), None)
+                if nested_icon_i is not None:
+                    icon_node = nested[nested_icon_i]
+                    label_nodes = [n for i, n in enumerate(nested) if i != nested_icon_i]
+                else:
+                    label_nodes = []
+            else:
+                label_nodes = [n for i, n in enumerate(meaningful) if i != icon_index]
+
+            if isinstance(icon_node, Tag) and icon_node.name == 'a':
+                icon = tiny_icon_in(icon_node)
+                direct_text = ''.join(icon_node.stripped_strings)
+                if icon is not None and direct_text:
+                    attrs = dict(icon_node.attrs)
+                    icon_anchor = soup.new_tag('a', attrs=attrs)
+                    icon.extract()
+                    icon_anchor.append(icon)
+                    label_anchor = soup.new_tag('a', attrs=attrs)
+                    for child in list(icon_node.contents):
+                        label_anchor.append(child.extract())
+                    icon_node = icon_anchor
+                    if label_anchor.get_text(strip=True):
+                        label_nodes.insert(0, label_anchor)
+
+            icon_box.append(icon_node)
+            for node in label_nodes:
+                label_box.append(node)
+            row.append(icon_box)
+            row.append(label_box)
+            stack.append(row)
+
+        return str(stack)
 
     def render_infobox(self, table):
         rows = table.get('tableRows', [])
