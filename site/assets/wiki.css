@@ -1116,20 +1116,22 @@ body.dark #wikiBody .wiki-heading .fold-btn:hover{background:rgba(255,255,255,.0
 .toc-toggle{font-size:17px!important;min-width:28px;min-height:28px;line-height:1;}
 
 /* =========================================================
-   2026-09-24 — infobox source-link icon/text alignment
-   Google Docs exports the tiny link glyph and its label as separate inline
-   elements. Treat each pair as one flex unit so their optical baselines match.
+   2026-09-24 — infobox tiny-link icon/text alignment (live Docs markup)
+   The live builder uses .doc-inline-icon, while older snapshots used
+   .source-link-icon.  Both are normalized here.  The row wrapper is emitted
+   by build_site.py for img+a, linked-image+a, and img+span variants.
    ========================================================= */
-#wikiBody .infobox .infobox-link-row{
+.infobox .infobox-link-row{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:.22em;
-  line-height:1.45;
+  gap:.18em;
+  line-height:1.35;
   vertical-align:middle;
   white-space:nowrap;
 }
-#wikiBody .infobox .infobox-link-row .source-link-icon{
+.infobox .infobox-link-row .doc-inline-icon,
+.infobox .infobox-link-row .source-link-icon{
   display:block!important;
   flex:0 0 auto;
   width:1em!important;
@@ -1137,18 +1139,33 @@ body.dark #wikiBody .wiki-heading .fold-btn:hover{background:rgba(255,255,255,.0
   max-width:1em!important;
   max-height:1em!important;
   margin:0!important;
-  vertical-align:middle!important;
+  vertical-align:baseline!important;
   object-fit:contain!important;
 }
-#wikiBody .infobox .infobox-link-row > a.external{
-  display:block;
-  line-height:1.45;
+.infobox .infobox-link-row > a,
+.infobox .infobox-link-row > span:not(.source-link-icon){
+  display:inline-flex;
+  align-items:center;
+  line-height:1.35;
   vertical-align:middle;
 }
-/* Source rows can arrive either as a single paragraph with <br> separators or
-   as multiple paragraphs. Remove browser paragraph margins so every line uses
-   the same vertical rhythm. */
-#wikiBody .infobox td:has(.infobox-link-row) > p{
+.infobox .infobox-link-row > a.image-link,
+.infobox .infobox-link-row > a.icon-only-link{
+  line-height:1;
+}
+/* Remove the global -0.16em baseline drop inside infoboxes even before/if a
+   source line is wrapped. This is the actual offset visible in the screenshot. */
+.infobox td .doc-inline-icon,
+.infobox td .source-link-icon{
+  vertical-align:middle!important;
+  margin-right:.18em!important;
+}
+.infobox td .infobox-link-row .doc-inline-icon,
+.infobox td .infobox-link-row .source-link-icon{
+  margin-right:0!important;
+}
+/* Source rows can arrive as one paragraph with <br> separators or several p's. */
+.infobox td:has(.infobox-link-row) > p{
   margin:0;
   line-height:1.55;
 }

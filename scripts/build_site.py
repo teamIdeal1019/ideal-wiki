@@ -489,22 +489,67 @@ class Renderer:
         return f'<div class="{" ".join(classes)}"><table>{"".join(out_rows)}</table></div>'
 
     def align_infobox_link_rows(self, fragment):
-        """Keep the tiny source-link icon and its label on one visual baseline.
+        """Group each infobox icon+label line into one inline-flex unit.
 
-        Google Docs stores the icon and link text as separate inline elements.
-        Browsers then align the bitmap on the text baseline independently, which
-        makes the icon look lower/higher than the label. Wrap each icon+link pair
-        so CSS can align them as a single inline-flex unit.
+        The live Docs renderer emits tiny source icons as ``doc-inline-icon``.
+        Depending on the source link/privacy filter, a line can be any of:
+        ``img + a``, ``a(image) + a(text)``, or ``img + span``.  The previous
+        hotfix only looked for the legacy ``source-link-icon`` + ``a`` shape,
+        so it never touched the live generated markup.  Split paragraphs on
+        <br> boundaries and wrap *any* line containing a tiny inline icon.
         """
-        if 'source-link-icon' not in fragment:
+        if 'doc-inline-icon' not in fragment and 'source-link-icon' not in fragment:
             return fragment
-        return re.sub(
-            r'(<img\b[^>]*class="[^"]*source-link-icon[^"]*"[^>]*/?>)\s*'
-            r'(<a\b[^>]*class="[^"]*external[^"]*"[^>]*>.*?</a>)',
-            r'<span class="infobox-link-row">\1\2</span>',
-            fragment,
-            flags=re.I | re.S,
-        )
+
+        soup = BeautifulSoup(fragment, 'html.parser')
+
+        def has_tiny_icon(nodes):
+            for node in nodes:
+                if not getattr(node, 'name', None):
+                    continue
+                classes = node.get('class') or []
+                if 'doc-inline-icon' in classes or 'source-link-icon' in classes:
+                    return True
+                if node.select_one('.doc-inline-icon, .source-link-icon'):
+                    return True
+            return False
+
+        def wrap_lines(container):
+            children = list(container.contents)
+            if not children:
+                return
+            lines = []
+            current = []
+            for child in children:
+                if getattr(child, 'name', None) == 'br':
+                    lines.append(current)
+                    current = []
+                else:
+                    current.append(child)
+            lines.append(current)
+
+            container.clear()
+            for i, nodes in enumerate(lines):
+                if has_tiny_icon(nodes):
+                    row = soup.new_tag('span')
+                    row['class'] = ['infobox-link-row']
+                    for node in nodes:
+                        row.append(node)
+                    container.append(row)
+                else:
+                    for node in nodes:
+                        container.append(node)
+                if i < len(lines) - 1:
+                    container.append(soup.new_tag('br'))
+
+        paragraphs = soup.find_all('p')
+        if paragraphs:
+            for paragraph in paragraphs:
+                wrap_lines(paragraph)
+        else:
+            wrap_lines(soup)
+
+        return ''.join(str(node) for node in soup.contents)
 
     def render_infobox(self, table):
         rows = table.get('tableRows', [])
